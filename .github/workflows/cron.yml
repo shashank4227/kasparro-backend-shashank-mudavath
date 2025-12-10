@@ -15,7 +15,7 @@ jobs:
       - name: Call API Endpoint
         run: |
           # Replace URL with your deployed Render URL
-          # Use secrets for the key in real repo: ${{ secrets.ADMIN_SECRET }}
+          # Use secrets for the key in real repo: secrets.ADMIN_SECRET
           curl -X POST https://kasparro-api.onrender.com/admin/trigger-etl \
             -H "Content-Type: application/json" \
             -H "X-Admin-Secret: default_insecure_secret"
