@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: kasparro_app
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-kasparro_etl}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY}
+      COINPAPRIKA_API_KEY: ${COINPAPRIKA_API_KEY}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: kasparro_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-kasparro_etl}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
