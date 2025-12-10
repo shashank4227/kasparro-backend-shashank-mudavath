@@ -9,6 +9,44 @@ This project implements a production-grade ETL pipeline and Backend API for cryp
 - **Resilience**: Implements rate limiting, retries w/ exponential backoff, and failure recovery.
 - **Security**: fully configured for environment-based secrets (no hardcoded keys).
 
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    subgraph Sources
+        CG[CoinGecko API]
+        CP[CoinPaprika API]
+        CSV[CSV Files]
+    end
+
+    subgraph "Kasparro Backend (Docker)"
+        ETL[ETL Pipeline Engine]
+        API[FastAPI Service]
+        DB[(PostgreSQL DB)]
+    end
+
+    subgraph "Clients & Triggers"
+        Cron[GitHub Actions Cron]
+        User[End User / Frontend]
+        Admin[Admin Manual Trigger]
+    end
+
+    %% Data Flow
+    CG -->|Fetch Data| ETL
+    CP -->|Fetch Data| ETL
+    CSV -->|Load| ETL
+    ETL -->|Normalize & Store| DB
+    
+    %% Access Flow
+    DB -->|Query| API
+    API -->|JSON Response| User
+
+    %% Triggers
+    Cron -->|POST /trigger-etl| API
+    Admin -->|POST /trigger-etl| API
+    API -->|Async Task| ETL
+```
+
 ## 🚀 Quick Start (Evaluators)
 
 ### 1. Run with Docker
