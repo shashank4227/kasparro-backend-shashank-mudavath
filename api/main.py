@@ -2,7 +2,7 @@ import time
 import uuid
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import data, health, stats
+from api.routes import data, health, stats, admin
 from prometheus_fastapi_instrumentator import Instrumentator
 from core.logging_config import configure_logging
 import logging
@@ -42,6 +42,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(data.router)
 app.include_router(stats.router)
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 @app.get("/")
 def root():

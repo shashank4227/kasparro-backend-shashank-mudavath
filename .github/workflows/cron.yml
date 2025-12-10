@@ -1,0 +1,18 @@
+name: Scheduled ETL Trigger
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Runs every 6 hours
+  workflow_dispatch:       # Allows manual trigger button
+
+jobs:
+  trigger-etl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call API Endpoint
+        run: |
+          # Replace URL with your deployed Render URL
+          # Use secrets for the key in real repo: ${{ secrets.ADMIN_SECRET }}
+          curl -X POST https://kasparro-api.onrender.com/admin/trigger-etl \
+            -H "Content-Type: application/json" \
+            -H "X-Admin-Secret: default_insecure_secret"
