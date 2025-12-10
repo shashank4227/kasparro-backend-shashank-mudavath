@@ -39,6 +39,14 @@ Executes all 22 automated tests covering ETL, Recovery, Drift, and API.
 make test
 ```
 
+### 4. Admin Manual Trigger (Evaluators)
+To test the "Cron" logic manually via API:
+```bash
+curl -X POST http://localhost:8000/admin/trigger-etl \
+  -H "X-Admin-Secret: default_insecure_secret"
+```
+*(Use the deployed URL for cloud verification)*
+
 ## ☁️ Cloud Deployment
 The system is designed for deployment on **Render** (or AWS/GCP).
 > **[View Cloud Deployment Guide](deployment_guide.md)**
