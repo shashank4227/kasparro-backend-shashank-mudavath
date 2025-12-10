@@ -13,15 +13,30 @@ This project implements a production-grade ETL pipeline and Backend API for cryp
 
 ### 1. Run with Docker
 The system runs universally via Docker Compose.
-```bash
-# Provide API Keys (Optional - defaults to free tier)
-export COINGECKO_API_KEY="your_key"
-export COINPAPRIKA_API_KEY="your_key"
 
+**Configuration (Optional):**
+Copy the example config and add your keys (if you have them).
+```bash
+cp .env.example .env
+# Edit .env with your keys
+```
+
+**Start the System:**
+```bash
 make up
 # Or: docker-compose up --build -d
 ```
 > **Note**: The API starts **immediately** (`start.sh` runs ETL in background).
+
+### 2. Run from Docker Hub (Evaluators)
+If you prefer to pull the pre-built image instead of building locally:
+```bash
+# 1. Pull Image
+docker pull shashank4227/kasparro-backend:latest
+
+# 2. Run (Requires a Postgres DB on the same network)
+# We recommend using the provided docker-compose.yml as it handles the DB setup automatically.
+```
 
 ### 2. Verify API & Smoke Test
 Run the automated smoke test script to verify End-to-End functionality:
