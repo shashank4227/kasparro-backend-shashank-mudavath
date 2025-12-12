@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
+# Generate fresh realistic data at build time
+RUN python generate_data.py
+
 # Copy and setup entrypoint
 COPY start.sh .
 RUN chmod +x start.sh

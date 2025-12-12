@@ -14,7 +14,7 @@ This guide walks through deploying the Kasparro ETL Backend to **Render.com** wh
    ```bash
    git init
    git add .
-   git commit -m "Initial commit"
+   git commit -m "Initial commit with real data fetch"
    git branch -M main
    git remote add origin https://github.com/YOUR_USERNAME/kasparro-backend.git
    git push -u origin main
@@ -24,7 +24,7 @@ This guide walks through deploying the Kasparro ETL Backend to **Render.com** wh
 1. Go to the [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** -> **PostgreSQL**.
 3. Name it `kasparro-db`.
-4. Choose the **Free** tier (or lowest paid for better performance).
+4. Choose the **Free** tier.
 5. Once created, copy the **Internal Connection String** (for use within Render) and **External Connection String** (for connecting from your laptop).
 
 ## Step 3: Deploy the Web Service
@@ -33,59 +33,68 @@ This guide walks through deploying the Kasparro ETL Backend to **Render.com** wh
 3. Configure:
    - **Name**: `kasparro-api`
    - **Environment**: `Docker`
+   - **Region**: Any
    - **Instance Type**: Free
-4. **Environment Variables** (Advanced):
+4. **Environment Variables**:
    Add the following variables:
    - `DATABASE_URL`: *Paste the Internal Connection String from Step 2*
-   - `COINGECKO_API_KEY`: *Your Key*
-   - `COINPAPRIKA_API_KEY`: *Your Key*
+   - `COINGECKO_API_KEY`: *Your Key (Optional)*
+   - `COINPAPRIKA_API_KEY`: *Your Key (Optional)*
    - `PYTHONUNBUFFERED`: `1`
+   - `PORT`: `8000` (Optional, Render sets this automatically)
 5. Click **Create Web Service**.
 
-Render will effectively run `docker build` and start your `start.sh` script automatically.
+> [!IMPORTANT]
+> Render will automatically run `docker build`.
+> **During the build setup defined in `Dockerfile`, the system will execute `python generate_data.py` to fetch REAL crypto data from CoinCap API.**
+> This ensures your deployment contains realistic, messy market data as required.
 
-## Step 4: Verify Deployment
-Once the deploy finishes, Render provides a public URL (e.g., `https://kasparro-api.onrender.com`).
-Test it:
+## Step 4: CRITICAL - Verify Deployment
+**You MUST verify the deployment is accessible.**
+
+1. Wait for the deploy to finish. Render will show "Live" and provide a URL like `https://kasparro-api-abcd.onrender.com`.
+2. **COPY THIS URL.**
+3. Open your browser and visit: `https://YOUR-APP-URL.onrender.com/docs`
+   - You should see the Swagger UI.
+4. **Required for Submission**:
+   - Ensure you include this **ACTUAL** URL in your submission form.
+   - Do NOT submit `https://kasparro-api.onrender.com` (that is a placeholder).
+
+Test via terminal:
 ```bash
-curl https://kasparro-api.onrender.com/health
+# Replace with your ACTUAL URL
+curl https://kasparro-api-abcd.onrender.com/health
 ```
 
 ## Step 5: Scheduled ETL Run (Free Option)
-Render's native "Cron Job" service is paid. To satisfy the "Cloud-based scheduled ETL" requirement for **free**, we will use **GitHub Actions**.
+Render's native "Cron Job" service is paid. To satisfy the "Cloud-based scheduled ETL" requirement for **free**, use **GitHub Actions**.
 
-### 1. Enable ETL Trigger Endpoint (Already Done)
-The updated backend now has a `POST /admin/trigger-etl` endpoint.
+### 1. Enable ETL Trigger Endpoint
+ The backend has a `POST /admin/trigger-etl` endpoint.
 
 ### 2. Set up GitHub Action Cron
-Create a file in your repository: `.github/workflows/cron.yml`
+Create ` .github/workflows/cron.yml` (already provided in repo):
 ```yaml
 name: Scheduled ETL Trigger
-
 on:
   schedule:
     - cron: '0 */6 * * *'  # Runs every 6 hours
   workflow_dispatch:       # Allows manual trigger button
-
 jobs:
   trigger-etl:
     runs-on: ubuntu-latest
     steps:
       - name: Call API Endpoint
         run: |
-          curl -X POST https://kasparro-api.onrender.com/admin/trigger-etl \
+          # REPLACE WITH YOUR ACTUAL RENDER URL
+          curl -X POST https://kasparro-api-abcd.onrender.com/admin/trigger-etl \
             -H "Content-Type: application/json"
 ```
-*(Replace `https://kasparro-api.onrender.com` with your actual Render URL)*
-
-This setup delegates the scheduling to GitHub (which is reliable and free), ensuring your ETL runs periodically without needing a paid cloud scheduler.
-
 
 ## Step 6: Logs & Monitoring
-- **Logs**: Visible directly in the Render Dashboard "Logs" tab for both the Web Service and Cron Job.
-- **Metrics**: Render provides basic CPU/RAM metrics in the dashboard.
+- **Logs**: Visible directly in the Render Dashboard "Logs" tab.
 
 ---
 
 # Data Persistence Note
-The `crypto_data.csv` files inside the docker image are "static" if deployed this way. For a real production app, you would upload CSVs to AWS S3 / Google Cloud Storage and have the script download them. For this assignment, packaging them in the Docker image is acceptable as "local" files.
+The `crypto_data.csv` files are generated **at build time** inside the Docker image using `generate_data.py`. This satisfies the requirement for "Data Realism" by fetching live market data snapshots during deployment.
