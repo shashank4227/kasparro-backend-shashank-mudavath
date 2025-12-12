@@ -8,7 +8,7 @@ def fetch_real_data():
     """Fetch top 100 assets from CoinCap API (free, no key needed)."""
     url = "https://api.coincap.io/v2/assets"
     try:
-response = requests.get(url, params={"limit": 100})
+        response = requests.get(url, params={"limit": 100})
         response.raise_for_status()
         return response.json()["data"]
     except Exception as e:
